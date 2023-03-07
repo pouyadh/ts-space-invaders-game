@@ -2,14 +2,33 @@ import inavderImageURL from "./assets/img/invader.png";
 import { SpaceObject } from "./SpaceObject";
 import { Space } from "./Space";
 import { loadImage, Position, Vector } from "./utils";
+import { Bullet } from "./Bullet";
 
 type PathMode = "once" | "alternate" | "infinit";
 
 export class Invader extends SpaceObject {
-  static image: ImageBitmap;
+  static I1 = class extends Invader {};
+  static I2 = class extends Invader {};
+  static I3 = class extends Invader {};
+  static I4 = class extends Invader {};
+  static I5 = class extends Invader {};
+  static I6 = class extends Invader {};
+  static I7 = class extends Invader {};
+  static I8 = class extends Invader {};
+  static I9 = class extends Invader {};
+  static I10 = class extends Invader {};
+
+  static images: ImageBitmap[][];
   static async load() {
     const img = await loadImage(inavderImageURL);
-    this.image = await createImageBitmap(img, 0, 0, img.width, img.height);
+    this.images = await Promise.all(
+      new Array(10)
+        .fill(null)
+        .map(async (emp, i) => [
+          await createImageBitmap(img, i * 256, 0, 256, 128),
+          await createImageBitmap(img, i * 256, 128, 256, 128),
+        ])
+    );
   }
   static width = 20;
   static height = 30;
@@ -24,11 +43,11 @@ export class Invader extends SpaceObject {
   pathMode: PathMode = "once";
   pathAlternateState: boolean = false;
 
-  constructor(space: Space) {
-    super({ space, width: 20, height: 30 });
+  constructor(space: Space, type: number = 0) {
+    super({ space, width: 100, height: 50, frames: Invader.images[type] });
     this.explodable = true;
-    this.image = Invader.image;
   }
+
   async goTo(p: Position) {
     this.target = p;
     return new Promise<Position>((res) => (this.resolveTarget = res));
@@ -87,7 +106,8 @@ export class Invader extends SpaceObject {
     if (!this.target) return;
     const v = this.center.to(this.target);
     const d = this.center.calcDistance(this.target);
-    this.center = this.center.translate(v.limitByRadius(d / 2.5));
+    this.velocity = v.limitByRadius(d / 2.5);
+    this.center = this.center.translate(this.velocity);
     if (d < 1) {
       const nextTarget = this.getNextTarget();
       this.resolveTarget(this.target);
@@ -100,5 +120,11 @@ export class Invader extends SpaceObject {
       this.move();
       this.nextMovementTimestamp = timestamp + Invader.movementInterval;
     }
+  }
+  shoot() {
+    const bullet = new Bullet(this.space, new Vector(0, 10));
+    bullet.topCenter = this.bottomCenter.translate(new Vector(0, 1));
+    bullet.power = 50;
+    this.space.add(bullet);
   }
 }

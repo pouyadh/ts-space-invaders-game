@@ -7,25 +7,26 @@ export class Explosion extends SpaceObject {
   static images: ImageBitmap[];
   static async load() {
     const img = await loadImage(explosionImageURL);
-    this.images = await Promise.all([
-      createImageBitmap(img, 145 * 0, 0, 145, 145),
-      createImageBitmap(img, 145 * 1, 0, 145, 145),
-      createImageBitmap(img, 145 * 2, 0, 145, 145),
-      createImageBitmap(img, 145 * 3, 0, 145, 145),
-    ]);
+    const fSize = 184;
+    this.images = await Promise.all(
+      new Array(9)
+        .fill(null)
+        .map((e, i) => createImageBitmap(img, fSize * i, 0, fSize, fSize))
+    );
   }
   step: number = 0;
-  timer: number;
+  nextStepTime: number = 0;
+  stepInterval: number = 50;
   constructor(space: Space, radius: number) {
-    super({ space, width: radius, height: radius });
-    this.image = Explosion.images[0];
-    this.timer = setInterval(this.updateStep.bind(this), 100);
+    super({ space, width: radius, height: radius, frames: Explosion.images });
   }
-  updateStep() {
-    this.image = Explosion.images?.[this.step];
-    if (++this.step > 3) {
-      clearInterval(this.timer);
-      this.health = 0;
+  animationEnded(): void {
+    this.health = 0;
+  }
+  process(timestamp: number): void {
+    this._topLeft = this._topLeft.translate(this.velocity);
+    if (timestamp > this.nextStepTime) {
+      this.nextStepTime = timestamp + this.stepInterval;
     }
   }
 }
