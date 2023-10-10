@@ -117,9 +117,9 @@ async function runGame() {
   </span>
   `);
 
-  //await delay(5000);
-  //await level1(space, state);
-  //await level2(space, state);
+  await delay(5000);
+  await level1(space, state);
+  await level2(space, state);
   await level3(space, state);
   space.setCenterHTML(`
   <span class="success">GOOD JOB!</span>
@@ -133,7 +133,7 @@ async function runGame() {
   <a href="https://github.com/pouyadh/ts-space-invaders-game" target="_blank" class="small">Project Repo</a>
   `);
   await delay(1000);
-  //clearInterval(stoneTimer);
+  clearInterval(stoneTimer);
 }
 
 async function level1(space: Space, state: GameState) {
@@ -155,7 +155,7 @@ async function level1(space: Space, state: GameState) {
 
   const inviders: Invader[] = new Array(8).fill(null).map((e, i) => {
     const i2 = i + 1;
-    const invader = new Invader(space, 0);
+    const invader = new Invader(space, space.cellWidth, 0);
     invader.center = space.center;
     invader.setPath(
       [
@@ -198,7 +198,11 @@ async function level2(space: Space, state: GameState) {
 
   const inviders: Invader[] = new Array(8).fill(null).map((e, i) => {
     const i2 = i + 1;
-    const invader = new Invader(space, Math.floor(Math.random() * 9));
+    const invader = new Invader(
+      space,
+      space.cellWidth,
+      Math.floor(Math.random() * 9)
+    );
     invader.center = space.center;
     invader.setPath(
       [
