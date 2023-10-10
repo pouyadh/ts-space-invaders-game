@@ -79,6 +79,63 @@ const generateStone = (space: Space) => {
   space.addBackgoundObject(stone, stone2, ex);
 };
 
+type GameState = {
+  score: number;
+  lives: number;
+  end: boolean;
+  updateUI: () => void;
+  addScore: (amount: number) => void;
+  decreaseLive: () => void;
+};
+async function runGame() {
+  const space = new Space("space-invaders-game", innerWidth, innerHeight);
+  const state: GameState = {
+    score: 0,
+    lives: 3,
+    end: false,
+    updateUI: function () {
+      space.setHeaderHTML(`SCORE: ${this.score} | LIVES:${this.lives}`);
+    },
+    addScore: function (amount: number) {
+      this.score += amount;
+      this.updateUI();
+    },
+    decreaseLive: function () {
+      this.lives--;
+      this.updateUI();
+    },
+  };
+  state.updateUI();
+  const stoneTimer = setInterval(() => generateStone(space), 500);
+
+  space.setCenterHTML(`
+  <span class="x-large"><a href="https://github.com/pouyadh/ts-space-invaders-game" target="_blank">Github Repo</a></span>
+  </br>  
+  </br>
+  <span class="large">
+  Welcome to the space invaders game
+  </span>
+  `);
+
+  //await delay(5000);
+  //await level1(space, state);
+  //await level2(space, state);
+  await level3(space, state);
+  space.setCenterHTML(`
+  <span class="success">GOOD JOB!</span>
+  </br>
+  <span class="large">
+    This was the last level
+    </br>
+    you can add more levels if you wish
+  </span>
+  </br>
+  <a href="https://github.com/pouyadh/ts-space-invaders-game" target="_blank" class="small">Project Repo</a>
+  `);
+  await delay(1000);
+  //clearInterval(stoneTimer);
+}
+
 async function level1(space: Space, state: GameState) {
   space.clear();
 
@@ -116,11 +173,9 @@ async function level1(space: Space, state: GameState) {
   diePromises.forEach((d) => {
     d.then(() => state.addScore(10));
   });
-  const allInvidersDie = Promise.all(diePromises);
+  await Promise.all(diePromises);
 
-  await allInvidersDie;
-
-  space.setCenterHTML("GOOD JOB!");
+  space.setCenterHTML(`<span class="success">GOOD JOB!</span>`);
   await delay(1000);
 }
 
@@ -161,63 +216,84 @@ async function level2(space: Space, state: GameState) {
   diePromises.forEach((d) => {
     d.then(() => state.addScore(15));
   });
-  const allInvidersDie = Promise.all(diePromises);
+  await Promise.all(diePromises);
 
-  await allInvidersDie;
-
-  space.setCenterHTML(`
-  <span class="success">GOOD JOB!</span>
-  </br>
-  <span class="large">
-    This was the last level
-    </br>
-    you can add more levels if you wish
-  </span>
-  </br>
-  <a href="https://github.com/pouyadh/ts-space-invaders-game" target="_blank" class="small">Project Repo</a>
-  `);
+  space.setCenterHTML(`<span class="success">GOOD JOB!</span>`);
   await delay(1000);
 }
-type GameState = {
-  score: number;
-  lives: number;
-  end: boolean;
-  updateUI: () => void;
-  addScore: (amount: number) => void;
-  decreaseLive: () => void;
-};
-async function runGame() {
-  const space = new Space("space-invaders-game", innerWidth, innerHeight);
-  const state: GameState = {
-    score: 0,
-    lives: 3,
-    end: false,
-    updateUI: function () {
-      space.setHeaderHTML(`SCORE: ${this.score} | LIVES:${this.lives}`);
-    },
-    addScore: function (amount: number) {
-      this.score += amount;
-      this.updateUI();
-    },
-    decreaseLive: function () {
-      this.lives--;
-      this.updateUI();
-    },
-  };
-  state.updateUI();
-  const stoneTimer = setInterval(() => generateStone(space), 500);
 
-  space.setCenterHTML(`
-  <span class="x-large"><a href="https://github.com/pouyadh/ts-space-invaders-game" target="_blank">Github Repo</a></span>
-  </br>  
-  </br>
-  <span class="large">
-  Welcome to the space invaders game
-  </span>
-  `);
+async function level3(space: Space, state: GameState) {
+  space.clear();
 
-  await delay(5000);
-  await level1(space, state);
-  await level2(space, state);
-  //clearInterval(stoneTimer);
+  space.setCenterHTML("LEVEL 3");
+  await delay(1000);
+
+  space.setGridTemplate(10, 20);
+  let spaceShip = new SpaceShip.S3(space);
+  spaceShip.bottomCenter = space.bottomCenter.translate(new Vector(0, -30));
+  space.add(spaceShip);
+
+  for (const msg of ["GET READY!", "THREE", "TWO", "ONE", "GO!"]) {
+    space.setCenterHTML(msg);
+    await delay(1000);
+  }
+  space.setCenterHTML("");
+
+  let inviders: Invader[] = new Array(8).fill(null).map((e, i) => {
+    const i2 = i + 1;
+    const invader = new Invader(
+      space,
+      space.cellWidth,
+      Math.floor(Math.random() * 9)
+    );
+    invader.center = space.center;
+    invader.setPath(
+      [
+        space.getGridCell(i2, 1).center,
+        space.getGridCell(i2, 2 + Math.random() * 2).center,
+        space.getGridCell(i2, 2).center,
+        space.getGridCell(i2, 1).center,
+      ],
+      "alternate"
+    );
+    return invader;
+  });
+  space.setGridTemplate(10, 20);
+  let inviders2: Invader[] = new Array(6).fill(null).map((e, i) => {
+    const i2 = i + 2;
+    const invader = new Invader(
+      space,
+      space.cellWidth,
+      Math.floor(Math.random() * 9)
+    );
+    invader.center = space.center;
+    invader.setPath(
+      [
+        space.getGridCell(i2, 5).center,
+        space.getGridCell(i2 - 1, 6).center,
+        space.getGridCell(i2 + 1, 7).center,
+      ],
+      "alternate"
+    );
+    return invader;
+  });
+
+  setInterval(() => {
+    inviders2.forEach((i) => i.shoot());
+  }, 4000);
+
+  const diePromises = space.add(...inviders, ...inviders2);
+  diePromises.forEach((d) => {
+    d.then(() => state.addScore(15));
+  });
+  diePromises.forEach((d) => {
+    d.then((i) => {
+      inviders = inviders.filter((inv) => inv !== i);
+      inviders2 = inviders2.filter((inv) => inv !== i);
+    });
+  });
+  await Promise.all(diePromises);
+
+  space.setCenterHTML(`<span class="success">GOOD JOB!</span>`);
+  await delay(1000);
 }

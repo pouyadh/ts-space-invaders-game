@@ -318,6 +318,12 @@ export class Grid extends Rectangle {
   get columnCount() {
     return this._columnCount;
   }
+  get cellWidth() {
+    return this._cellWidth;
+  }
+  get cellHeight() {
+    return this._cellhHeight;
+  }
   randomCell() {
     const rnd = Math.random;
     const flr = Math.floor;

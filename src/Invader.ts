@@ -7,17 +7,6 @@ import { Bullet } from "./Bullet";
 type PathMode = "once" | "alternate" | "infinit";
 
 export class Invader extends SpaceObject {
-  static I1 = class extends Invader {};
-  static I2 = class extends Invader {};
-  static I3 = class extends Invader {};
-  static I4 = class extends Invader {};
-  static I5 = class extends Invader {};
-  static I6 = class extends Invader {};
-  static I7 = class extends Invader {};
-  static I8 = class extends Invader {};
-  static I9 = class extends Invader {};
-  static I10 = class extends Invader {};
-
   static images: ImageBitmap[][];
   static async load() {
     const img = await loadImage(inavderImageURL);
@@ -43,8 +32,13 @@ export class Invader extends SpaceObject {
   pathMode: PathMode = "once";
   pathAlternateState: boolean = false;
 
-  constructor(space: Space, type: number = 0) {
-    super({ space, width: 100, height: 50, frames: Invader.images[type] });
+  constructor(space: Space, size: number = 100, type: number = 0) {
+    super({
+      space,
+      width: size,
+      height: (size / 100) * 50,
+      frames: Invader.images[type],
+    });
     this.explodable = true;
   }
 
